@@ -1,0 +1,47 @@
+syntax = "proto3";
+package article;
+option go_package = "./;proto";
+import "empty.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service Articles{
+  rpc CreateArticle(CreateArticleRequest) returns(Article){
+    option (google.api.http) = {
+      post: "/articles"
+      body: "*"
+    };
+  }
+  rpc CreateComment(CreateCommentRequest) returns(Comment){
+    option (google.api.http) = {
+      post: "/articles/{slug}/comments"
+      body: "*"
+    };
+  }
+
+}
+
+message Comment{
+  string id = 1;
+  string body = 2;
+}
+
+message Article {
+  string slug = 1;
+  string title = 2;
+  string description = 3;
+  string body = 4;
+  repeated string tagList = 5;
+}
+
+message CreateArticleRequest {
+  string title = 1;
+  string description = 2;
+  string body = 3;
+  repeated string tagList = 4;
+}
+
+message CreateCommentRequest {
+  string slug = 1;
+  string body = 2;
+}
