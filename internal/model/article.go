@@ -16,7 +16,7 @@ type Article struct {
 	Description string `gorm:"not null"`
 	Body        string `gorm:"not null"`
 	Tags        []Tag  `gorm:"many2many:article_tags"`
-	UserID      uint   `gorm:"not null"`
+	UserID      string   `gorm:"not null"`
 	Comments    []Comment
 }
 
