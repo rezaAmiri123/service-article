@@ -1,8 +1,6 @@
 package model
 
 import (
-	"fmt"
-
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/jinzhu/gorm"
 
@@ -13,10 +11,11 @@ import (
 type Article struct {
 	gorm.Model
 	Title       string `gorm:"not null"`
+	Slug        string `gorm:"not null"`
 	Description string `gorm:"not null"`
 	Body        string `gorm:"not null"`
 	Tags        []Tag  `gorm:"many2many:article_tags"`
-	UserID      string   `gorm:"not null"`
+	UserID      string `gorm:"not null"`
 	Comments    []Comment
 }
 
@@ -45,7 +44,7 @@ func (a *Article) Overwrite(title, description, body string) {
 // ProtoArticle generates proto article model from article
 func (a *Article) ProtoArticle() *pb.Article {
 	pa := pb.Article{
-		Slug:        fmt.Sprintf("%d", a.ID),
+		Slug:        a.Slug,
 		Title:       a.Title,
 		Description: a.Description,
 		Body:        a.Body,

@@ -12,10 +12,41 @@ service Articles{
       body: "*"
     };
   }
+
+  rpc GetArticle(GetArticleRequest) returns(Article){
+    option (google.api.http) = {
+      get: "/articles/{slug}"
+    };
+  }
+
+  rpc UpdateArticle(UpdateArticleRequest) returns(Article){
+    option (google.api.http) = {
+      put: "/articles/{slug}"
+      body:"*"
+    };
+  }
+
+  rpc DeleteArticle(DeleteArticleRequest) returns(Empty){
+    option (google.api.http) = {
+      delete: "/articles/{slug}"
+    };
+  }
+
   rpc CreateComment(CreateCommentRequest) returns(Comment){
     option (google.api.http) = {
       post: "/articles/{slug}/comments"
       body: "*"
+    };
+  }
+  rpc GetComments(GetCommentsRequest) returns(CommentsResponse){
+    option (google.api.http) = {
+      get: "/articles/{slug}/comments"
+    };
+  }
+
+  rpc DeleteComment(DeleteCommentRequest) returns(Empty){
+    option (google.api.http) = {
+      get: "/articles/{slug}/comments/{id}"
     };
   }
 
@@ -45,3 +76,33 @@ message CreateCommentRequest {
   string slug = 1;
   string body = 2;
 }
+
+message GetArticleRequest {
+  string slug = 1;
+}
+
+message UpdateArticleRequest{
+  string title = 1;
+  string description = 2;
+  string body = 3;
+  string slug = 4;
+}
+
+message DeleteArticleRequest{
+  string slug = 1;
+}
+
+message GetCommentsRequest{
+  string slug = 1;
+}
+
+message CommentsResponse{
+  repeated Comment comments = 1;
+}
+
+message DeleteCommentRequest{
+  string slug = 1;
+  string id = 2;
+}
+
+message Empty{}

@@ -19,7 +19,12 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ArticlesClient interface {
 	CreateArticle(ctx context.Context, in *CreateArticleRequest, opts ...grpc.CallOption) (*Article, error)
+	GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*Article, error)
+	UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*Article, error)
+	DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Empty, error)
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*Comment, error)
+	GetComments(ctx context.Context, in *GetCommentsRequest, opts ...grpc.CallOption) (*CommentsResponse, error)
+	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type articlesClient struct {
@@ -39,9 +44,54 @@ func (c *articlesClient) CreateArticle(ctx context.Context, in *CreateArticleReq
 	return out, nil
 }
 
+func (c *articlesClient) GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*Article, error) {
+	out := new(Article)
+	err := c.cc.Invoke(ctx, "/article.Articles/GetArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articlesClient) UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*Article, error) {
+	out := new(Article)
+	err := c.cc.Invoke(ctx, "/article.Articles/UpdateArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articlesClient) DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/article.Articles/DeleteArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *articlesClient) CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*Comment, error) {
 	out := new(Comment)
 	err := c.cc.Invoke(ctx, "/article.Articles/CreateComment", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articlesClient) GetComments(ctx context.Context, in *GetCommentsRequest, opts ...grpc.CallOption) (*CommentsResponse, error) {
+	out := new(CommentsResponse)
+	err := c.cc.Invoke(ctx, "/article.Articles/GetComments", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articlesClient) DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/article.Articles/DeleteComment", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +103,12 @@ func (c *articlesClient) CreateComment(ctx context.Context, in *CreateCommentReq
 // for forward compatibility
 type ArticlesServer interface {
 	CreateArticle(context.Context, *CreateArticleRequest) (*Article, error)
+	GetArticle(context.Context, *GetArticleRequest) (*Article, error)
+	UpdateArticle(context.Context, *UpdateArticleRequest) (*Article, error)
+	DeleteArticle(context.Context, *DeleteArticleRequest) (*Empty, error)
 	CreateComment(context.Context, *CreateCommentRequest) (*Comment, error)
+	GetComments(context.Context, *GetCommentsRequest) (*CommentsResponse, error)
+	DeleteComment(context.Context, *DeleteCommentRequest) (*Empty, error)
 }
 
 // UnimplementedArticlesServer should be embedded to have forward compatible implementations.
@@ -63,8 +118,23 @@ type UnimplementedArticlesServer struct {
 func (UnimplementedArticlesServer) CreateArticle(context.Context, *CreateArticleRequest) (*Article, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateArticle not implemented")
 }
+func (UnimplementedArticlesServer) GetArticle(context.Context, *GetArticleRequest) (*Article, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetArticle not implemented")
+}
+func (UnimplementedArticlesServer) UpdateArticle(context.Context, *UpdateArticleRequest) (*Article, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateArticle not implemented")
+}
+func (UnimplementedArticlesServer) DeleteArticle(context.Context, *DeleteArticleRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteArticle not implemented")
+}
 func (UnimplementedArticlesServer) CreateComment(context.Context, *CreateCommentRequest) (*Comment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateComment not implemented")
+}
+func (UnimplementedArticlesServer) GetComments(context.Context, *GetCommentsRequest) (*CommentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetComments not implemented")
+}
+func (UnimplementedArticlesServer) DeleteComment(context.Context, *DeleteCommentRequest) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteComment not implemented")
 }
 
 // UnsafeArticlesServer may be embedded to opt out of forward compatibility for this service.
@@ -96,6 +166,60 @@ func _Articles_CreateArticle_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Articles_GetArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).GetArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/GetArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).GetArticle(ctx, req.(*GetArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Articles_UpdateArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).UpdateArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/UpdateArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).UpdateArticle(ctx, req.(*UpdateArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Articles_DeleteArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).DeleteArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/DeleteArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).DeleteArticle(ctx, req.(*DeleteArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Articles_CreateComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateCommentRequest)
 	if err := dec(in); err != nil {
@@ -114,6 +238,42 @@ func _Articles_CreateComment_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Articles_GetComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCommentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).GetComments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/GetComments",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).GetComments(ctx, req.(*GetCommentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Articles_DeleteComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).DeleteComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/DeleteComment",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).DeleteComment(ctx, req.(*DeleteCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Articles_ServiceDesc is the grpc.ServiceDesc for Articles service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -126,8 +286,28 @@ var Articles_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Articles_CreateArticle_Handler,
 		},
 		{
+			MethodName: "GetArticle",
+			Handler:    _Articles_GetArticle_Handler,
+		},
+		{
+			MethodName: "UpdateArticle",
+			Handler:    _Articles_UpdateArticle_Handler,
+		},
+		{
+			MethodName: "DeleteArticle",
+			Handler:    _Articles_DeleteArticle_Handler,
+		},
+		{
 			MethodName: "CreateComment",
 			Handler:    _Articles_CreateComment_Handler,
+		},
+		{
+			MethodName: "GetComments",
+			Handler:    _Articles_GetComments_Handler,
+		},
+		{
+			MethodName: "DeleteComment",
+			Handler:    _Articles_DeleteComment_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

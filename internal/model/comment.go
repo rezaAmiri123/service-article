@@ -13,7 +13,7 @@ import (
 type Comment struct {
 	gorm.Model
 	Body      string `gorm:"not null"`
-	UserID    uint   `gorm:"not null"`
+	UserID    string   `gorm:"not null"`
 	ArticleID uint   `gorm:"not null"`
 	Article   Article
 }

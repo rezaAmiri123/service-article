@@ -48,7 +48,129 @@
         ]
       }
     },
+    "/articles/{slug}": {
+      "get": {
+        "operationId": "Articles_GetArticle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleArticle"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      },
+      "delete": {
+        "operationId": "Articles_DeleteArticle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      },
+      "put": {
+        "operationId": "Articles_UpdateArticle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleArticle"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/articleUpdateArticleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
     "/articles/{slug}/comments": {
+      "get": {
+        "operationId": "Articles_GetComments",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleCommentsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      },
       "post": {
         "operationId": "Articles_CreateComment",
         "responses": {
@@ -79,6 +201,42 @@
             "schema": {
               "$ref": "#/definitions/articleCreateCommentRequest"
             }
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      }
+    },
+    "/articles/{slug}/comments/{id}": {
+      "get": {
+        "operationId": "Articles_DeleteComment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -122,6 +280,17 @@
         }
       }
     },
+    "articleCommentsResponse": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/articleComment"
+          }
+        }
+      }
+    },
     "articleCreateArticleRequest": {
       "type": "object",
       "properties": {
@@ -149,6 +318,26 @@
           "type": "string"
         },
         "body": {
+          "type": "string"
+        }
+      }
+    },
+    "articleEmpty": {
+      "type": "object"
+    },
+    "articleUpdateArticleRequest": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "slug": {
           "type": "string"
         }
       }
