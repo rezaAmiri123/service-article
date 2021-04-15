@@ -28,6 +28,7 @@ func NewArticleHandler(repo repository.ArticleRepository, logger logger.Logger, 
 func (h *articleHandler) CreateArticle(ctx context.Context, req *pb.CreateArticleRequest) (*pb.Article, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.CreateArticle")
 	defer span.Finish()
+
 	user, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
@@ -53,7 +54,21 @@ func (h *articleHandler) CreateArticle(ctx context.Context, req *pb.CreateArticl
 	return article.ProtoArticle(), nil
 }
 func (h *articleHandler) GetArticle(ctx context.Context, req *pb.GetArticleRequest) (*pb.Article, error) {
-	return nil, nil
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.GetArticle")
+	defer span.Finish()
+
+	//user, err := h.getUser(ctx)
+	_, err := h.getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := h.repo.GetBySlug(ctx, req.GetSlug())
+	if err != nil {
+		return nil, err
+	}
+
+	return article.ProtoArticle(), nil
 }
 
 func (h *articleHandler) getUser(ctx context.Context) (*userPb.UserResponse, error) {
