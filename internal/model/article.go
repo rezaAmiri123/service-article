@@ -2,6 +2,7 @@ package model
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/gosimple/slug"
 	"github.com/jinzhu/gorm"
 
 	pb "github.com/rezaAmiri123/service-article/gen/pb"
@@ -32,6 +33,7 @@ func (a Article) Validate() error {
 func (a *Article) Overwrite(title, description, body string) {
 	if title != "" {
 		a.Title = title
+		a.Slug = slug.Make(title)
 	}
 	if description != "" {
 		a.Description = description

@@ -2,16 +2,18 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gosimple/slug"
 	"github.com/opentracing/opentracing-go"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/rezaAmiri123/service-article/gen/pb"
 	"github.com/rezaAmiri123/service-article/internal/model"
 	"github.com/rezaAmiri123/service-article/internal/repository"
 	"github.com/rezaAmiri123/service-article/pkg/logger"
-	"github.com/rezaAmiri123/service-article/pkg/utils"
 	userPb "github.com/rezaAmiri123/service-user/gen/pb"
 )
 
@@ -42,7 +44,7 @@ func (h *articleHandler) CreateArticle(ctx context.Context, req *pb.CreateArticl
 		Slug:        slug.Make(req.GetTitle()),
 		Description: req.GetDescription(),
 		Body:        req.GetBody(),
-		UserID:      utils.UintToString(user.Id),
+		UserID:      user.Id,
 		Tags:        tags,
 	}
 	if err = article.Validate(); err != nil {
@@ -81,16 +83,73 @@ func (h *articleHandler) getUser(ctx context.Context) (*userPb.UserResponse, err
 }
 
 func (h *articleHandler) UpdateArticle(ctx context.Context, req *pb.UpdateArticleRequest) (*pb.Article, error) {
-	return nil, nil
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.UpdateArticle")
+	defer span.Finish()
+
+	user, err := h.getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := h.repo.GetBySlug(ctx, req.GetSlug())
+	if err != nil {
+		return nil, err
+	}
+
+	if article.UserID != user.Id {
+		msg := fmt.Sprintf("wrong user")
+		return nil, status.Error(codes.PermissionDenied, msg)
+	}
+
+	article.Overwrite(
+		req.GetTitle(),
+		req.GetDescription(),
+		req.GetBody(),
+	)
+
+	if err = article.Validate(); err != nil {
+		err = fmt.Errorf("validation error: %w", err)
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if err = h.repo.Update(ctx, article); err != nil {
+		msg := fmt.Sprintf("database error: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	return article.ProtoArticle(), nil
 }
 
 func (h *articleHandler) DeleteArticle(ctx context.Context, req *pb.DeleteArticleRequest) (*pb.Empty, error) {
-	return nil, nil
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.DeleteArticle")
+	defer span.Finish()
+
+	user, err := h.getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := h.repo.GetBySlug(ctx, req.GetSlug())
+	if err != nil {
+		return nil, err
+	}
+
+	if article.UserID != user.Id {
+		msg := fmt.Sprintf("wrong user")
+		return nil, status.Error(codes.PermissionDenied, msg)
+	}
+
+	if err = h.repo.Delete(ctx, article); err != nil {
+		msg := fmt.Sprintf("database error: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+
+	return &pb.Empty{}, nil
 }
 
 func (h *articleHandler) CreateComment(ctx context.Context, req *pb.CreateCommentRequest) (*pb.Comment, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.CreateComment")
 	defer span.Finish()
+
 	user, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
@@ -103,7 +162,7 @@ func (h *articleHandler) CreateComment(ctx context.Context, req *pb.CreateCommen
 	comment := model.Comment{
 		Body:      req.GetBody(),
 		ArticleID: article.ID,
-		UserID:    utils.UintToString(user.Id),
+		UserID:    user.Id,
 	}
 	if err := comment.Validate(); err != nil {
 		return nil, err
@@ -114,10 +173,62 @@ func (h *articleHandler) CreateComment(ctx context.Context, req *pb.CreateCommen
 	return comment.ProtoComment(), nil
 }
 
-func (h *articleHandler) GetComments(ctx context.Context, req *pb.GetCommentsRequest) (*pb.CommentsResponse, error) {
-	return nil, nil
+func (h *articleHandler) DeleteComment(ctx context.Context, req *pb.DeleteCommentRequest) (*pb.Empty, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.DeleteComment")
+	defer span.Finish()
+
+	user, err := h.getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := h.repo.GetBySlug(ctx, req.GetSlug())
+	if err != nil {
+		return nil, err
+	}
+
+	comment, err := h.repo.GetCommentByID(ctx, req.GetId())
+	if err != nil {
+		msg := fmt.Sprintf("database error: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	if article.UserID != user.Id || comment.ArticleID != article.ID {
+		msg := fmt.Sprintf("wrong user")
+		return nil, status.Error(codes.PermissionDenied, msg)
+	}
+	err = h.repo.DeleteComment(ctx, comment)
+	if err != nil {
+		msg := fmt.Sprintf("database error: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	return &pb.Empty{}, nil
 }
 
-func (h *articleHandler) DeleteComment(ctx context.Context, req *pb.DeleteCommentRequest) (*pb.Empty, error) {
-	return nil, nil
+func (h *articleHandler) GetComments(ctx context.Context, req *pb.GetCommentsRequest) (*pb.CommentsResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.GetComments")
+	defer span.Finish()
+
+	//user, err := h.getUser(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	article, err := h.repo.GetBySlug(ctx, req.GetSlug())
+	if err != nil {
+		msg := fmt.Sprintf("database error: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+
+	comments, err := h.repo.GetComments(ctx, article)
+	if err != nil {
+		msg := fmt.Sprintf("database error: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+
+	pcs := make([]*pb.Comment, 0, len(comments))
+	for _, c := range comments {
+		pcs = append(pcs, c.ProtoComment())
+	}
+	return &pb.CommentsResponse{Comments: pcs}, nil
 }
+

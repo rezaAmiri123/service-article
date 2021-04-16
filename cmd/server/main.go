@@ -1,16 +1,6 @@
 package main
 
 import (
-	"github.com/rezaAmiri123/service-article/cmd/config"
-	"github.com/rezaAmiri123/service-article/internal/handler"
-	"github.com/rezaAmiri123/service-article/internal/model"
-	"github.com/rezaAmiri123/service-article/internal/repository"
-	"github.com/rezaAmiri123/service-article/pkg/jaeger"
-	"github.com/rezaAmiri123/service-article/pkg/logger"
-	"github.com/rezaAmiri123/service-article/pkg/mysql"
-	"github.com/rezaAmiri123/service-article/pkg/utils"
-	userPb "github.com/rezaAmiri123/service-user/gen/pb"
-
 	"log"
 	"net"
 	"os"
@@ -20,7 +10,16 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 
+	"github.com/rezaAmiri123/service-article/cmd/config"
 	pb "github.com/rezaAmiri123/service-article/gen/pb"
+	"github.com/rezaAmiri123/service-article/internal/handler"
+	"github.com/rezaAmiri123/service-article/internal/model"
+	"github.com/rezaAmiri123/service-article/internal/repository"
+	"github.com/rezaAmiri123/service-article/pkg/jaeger"
+	"github.com/rezaAmiri123/service-article/pkg/logger"
+	"github.com/rezaAmiri123/service-article/pkg/mysql"
+	"github.com/rezaAmiri123/service-article/pkg/utils"
+	userPb "github.com/rezaAmiri123/service-user/gen/pb"
 )
 
 func main() {
@@ -47,7 +46,6 @@ func main() {
 	defer db.Close()
 	model.AutoMigrate(db)
 
-
 	tracer, closer, err := jaeger.InitJaeger(cfg)
 	if err != nil {
 		appLogger.Fatal("cannot create tracer", err)
@@ -67,8 +65,7 @@ func main() {
 	defer conn.Close()
 	userConn := userPb.NewUsersClient(conn)
 
-
-	h := handler.NewArticleHandler(repo, appLogger,userConn)
+	h := handler.NewArticleHandler(repo, appLogger, userConn)
 	lis, err := net.Listen("tcp", cfg.Server.Port)
 	if err != nil {
 		appLogger.Fatal(err.Error())
