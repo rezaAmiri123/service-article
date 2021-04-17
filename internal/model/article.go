@@ -11,13 +11,15 @@ import (
 // Article model
 type Article struct {
 	gorm.Model
-	Title       string `gorm:"not null"`
-	Slug        string `gorm:"not null"`
-	Description string `gorm:"not null"`
-	Body        string `gorm:"not null"`
-	Tags        []Tag  `gorm:"many2many:article_tags"`
-	UserID      string `gorm:"not null"`
-	Comments    []Comment
+	Title          string `gorm:"not null"`
+	Slug           string `gorm:"not null"`
+	Description    string `gorm:"not null"`
+	Body           string `gorm:"not null"`
+	Tags           []Tag  `gorm:"many2many:article_tags"`
+	UserID         string `gorm:"not null"`
+	Comments       []Comment
+	FavoritedUsers []string `gorm:"many2many:favorite_articles"`
+	FavoritesCount int32    `gorm:"not null;default=0"`
 }
 
 // Validate validates fields of article model
@@ -44,12 +46,14 @@ func (a *Article) Overwrite(title, description, body string) {
 }
 
 // ProtoArticle generates proto article model from article
-func (a *Article) ProtoArticle() *pb.Article {
+func (a *Article) ProtoArticle(favorited bool) *pb.Article {
 	pa := pb.Article{
 		Slug:        a.Slug,
 		Title:       a.Title,
 		Description: a.Description,
 		Body:        a.Body,
+		Favorited: favorited,
+		FavoritesCount: a.FavoritesCount,
 	}
 
 	// article tags

@@ -63,6 +63,8 @@ message Article {
   string description = 3;
   string body = 4;
   repeated string tagList = 5;
+  bool favorited = 6;
+  int32 favoritesCount = 7;
 }
 
 message CreateArticleRequest {

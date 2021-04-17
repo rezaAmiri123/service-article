@@ -266,6 +266,13 @@
           "items": {
             "type": "string"
           }
+        },
+        "favorited": {
+          "type": "boolean"
+        },
+        "favoritesCount": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
