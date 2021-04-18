@@ -243,6 +243,72 @@
           "Articles"
         ]
       }
+    },
+    "/articles/{slug}/favorite": {
+      "delete": {
+        "operationId": "Articles_UnfavoriteArticle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleArticle"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      },
+      "post": {
+        "operationId": "Articles_FavoriteArticle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleArticle"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/articleFavoriteArticleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      }
     }
   },
   "definitions": {
@@ -331,6 +397,14 @@
     },
     "articleEmpty": {
       "type": "object"
+    },
+    "articleFavoriteArticleRequest": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        }
+      }
     },
     "articleUpdateArticleRequest": {
       "type": "object",

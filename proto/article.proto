@@ -32,6 +32,19 @@ service Articles{
     };
   }
 
+  rpc FavoriteArticle(FavoriteArticleRequest) returns(Article){
+    option (google.api.http) = {
+      post: "/articles/{slug}/favorite"
+      body: "*"
+    };
+  }
+
+  rpc UnfavoriteArticle(FavoriteArticleRequest) returns(Article){
+    option (google.api.http) = {
+      delete: "/articles/{slug}/favorite"
+    };
+  }
+
   rpc CreateComment(CreateCommentRequest) returns(Comment){
     option (google.api.http) = {
       post: "/articles/{slug}/comments"
@@ -108,3 +121,11 @@ message DeleteCommentRequest{
 }
 
 message Empty{}
+
+message FavoriteArticleRequest {
+  string slug = 1;
+}
+
+message UnfavoriteArticleRequest {
+  string slug = 1;
+}

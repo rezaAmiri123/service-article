@@ -22,6 +22,8 @@ type ArticlesClient interface {
 	GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*Article, error)
 	UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*Article, error)
 	DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Empty, error)
+	FavoriteArticle(ctx context.Context, in *FavoriteArticleRequest, opts ...grpc.CallOption) (*Article, error)
+	UnfavoriteArticle(ctx context.Context, in *FavoriteArticleRequest, opts ...grpc.CallOption) (*Article, error)
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*Comment, error)
 	GetComments(ctx context.Context, in *GetCommentsRequest, opts ...grpc.CallOption) (*CommentsResponse, error)
 	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*Empty, error)
@@ -71,6 +73,24 @@ func (c *articlesClient) DeleteArticle(ctx context.Context, in *DeleteArticleReq
 	return out, nil
 }
 
+func (c *articlesClient) FavoriteArticle(ctx context.Context, in *FavoriteArticleRequest, opts ...grpc.CallOption) (*Article, error) {
+	out := new(Article)
+	err := c.cc.Invoke(ctx, "/article.Articles/FavoriteArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articlesClient) UnfavoriteArticle(ctx context.Context, in *FavoriteArticleRequest, opts ...grpc.CallOption) (*Article, error) {
+	out := new(Article)
+	err := c.cc.Invoke(ctx, "/article.Articles/UnfavoriteArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *articlesClient) CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*Comment, error) {
 	out := new(Comment)
 	err := c.cc.Invoke(ctx, "/article.Articles/CreateComment", in, out, opts...)
@@ -106,6 +126,8 @@ type ArticlesServer interface {
 	GetArticle(context.Context, *GetArticleRequest) (*Article, error)
 	UpdateArticle(context.Context, *UpdateArticleRequest) (*Article, error)
 	DeleteArticle(context.Context, *DeleteArticleRequest) (*Empty, error)
+	FavoriteArticle(context.Context, *FavoriteArticleRequest) (*Article, error)
+	UnfavoriteArticle(context.Context, *FavoriteArticleRequest) (*Article, error)
 	CreateComment(context.Context, *CreateCommentRequest) (*Comment, error)
 	GetComments(context.Context, *GetCommentsRequest) (*CommentsResponse, error)
 	DeleteComment(context.Context, *DeleteCommentRequest) (*Empty, error)
@@ -126,6 +148,12 @@ func (UnimplementedArticlesServer) UpdateArticle(context.Context, *UpdateArticle
 }
 func (UnimplementedArticlesServer) DeleteArticle(context.Context, *DeleteArticleRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteArticle not implemented")
+}
+func (UnimplementedArticlesServer) FavoriteArticle(context.Context, *FavoriteArticleRequest) (*Article, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FavoriteArticle not implemented")
+}
+func (UnimplementedArticlesServer) UnfavoriteArticle(context.Context, *FavoriteArticleRequest) (*Article, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnfavoriteArticle not implemented")
 }
 func (UnimplementedArticlesServer) CreateComment(context.Context, *CreateCommentRequest) (*Comment, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateComment not implemented")
@@ -220,6 +248,42 @@ func _Articles_DeleteArticle_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Articles_FavoriteArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FavoriteArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).FavoriteArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/FavoriteArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).FavoriteArticle(ctx, req.(*FavoriteArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Articles_UnfavoriteArticle_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FavoriteArticleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).UnfavoriteArticle(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/UnfavoriteArticle",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).UnfavoriteArticle(ctx, req.(*FavoriteArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Articles_CreateComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateCommentRequest)
 	if err := dec(in); err != nil {
@@ -296,6 +360,14 @@ var Articles_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteArticle",
 			Handler:    _Articles_DeleteArticle_Handler,
+		},
+		{
+			MethodName: "FavoriteArticle",
+			Handler:    _Articles_FavoriteArticle_Handler,
+		},
+		{
+			MethodName: "UnfavoriteArticle",
+			Handler:    _Articles_UnfavoriteArticle_Handler,
 		},
 		{
 			MethodName: "CreateComment",

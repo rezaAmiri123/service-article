@@ -53,14 +53,14 @@ func (h *articleHandler) CreateArticle(ctx context.Context, req *pb.CreateArticl
 	if err = h.repo.Create(ctx, &article); err != nil {
 		return nil, err
 	}
-	return article.ProtoArticle(), nil
+	return article.ProtoArticle(true), nil
 }
 func (h *articleHandler) GetArticle(ctx context.Context, req *pb.GetArticleRequest) (*pb.Article, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.GetArticle")
 	defer span.Finish()
 
 	//user, err := h.getUser(ctx)
-	_, err := h.getUser(ctx)
+	user, err := h.getUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,12 @@ func (h *articleHandler) GetArticle(ctx context.Context, req *pb.GetArticleReque
 		return nil, err
 	}
 
-	return article.ProtoArticle(), nil
+	favorited, err := h.repo.IsFavorited(ctx, article, user.Id)
+	if err != nil {
+		msg := fmt.Sprintf("failded to get user favorited")
+		return nil, status.Error(codes.Aborted, msg)
+	}
+	return article.ProtoArticle(favorited), nil
 }
 
 func (h *articleHandler) getUser(ctx context.Context) (*userPb.UserResponse, error) {
@@ -116,7 +121,7 @@ func (h *articleHandler) UpdateArticle(ctx context.Context, req *pb.UpdateArticl
 		msg := fmt.Sprintf("database error: %w", err.Error())
 		return nil, status.Error(codes.InvalidArgument, msg)
 	}
-	return article.ProtoArticle(), nil
+	return article.ProtoArticle(true), nil
 }
 
 func (h *articleHandler) DeleteArticle(ctx context.Context, req *pb.DeleteArticleRequest) (*pb.Empty, error) {
@@ -232,3 +237,43 @@ func (h *articleHandler) GetComments(ctx context.Context, req *pb.GetCommentsReq
 	return &pb.CommentsResponse{Comments: pcs}, nil
 }
 
+func (h *articleHandler) FavoriteArticle(ctx context.Context, req *pb.FavoriteArticleRequest) (*pb.Article, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.FavoriteArticle")
+	defer span.Finish()
+
+	user, err := h.getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := h.repo.GetBySlug(ctx, req.GetSlug())
+	if err != nil {
+		return nil, err
+	}
+	err = h.repo.AddFavorite(ctx, article, user.Id)
+	if err != nil {
+		msg := fmt.Sprintf("failed to add favorite: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	return article.ProtoArticle(true), nil
+}
+
+func (h *articleHandler) UnfavoriteArticle(ctx context.Context, req *pb.FavoriteArticleRequest) (*pb.Article, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.UnfavoriteArticle")
+	defer span.Finish()
+	user, err := h.getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	article, err := h.repo.GetBySlug(ctx, req.GetSlug())
+	if err != nil {
+		return nil, err
+	}
+	err = h.repo.DeleteFavorite(ctx, article, user.Id)
+	if err != nil {
+		msg := fmt.Sprintf("failed to delete favorite: %w", err.Error())
+		return nil, status.Error(codes.InvalidArgument, msg)
+	}
+	return article.ProtoArticle(false), nil
+}
