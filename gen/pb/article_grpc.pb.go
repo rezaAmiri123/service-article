@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ArticlesClient interface {
 	CreateArticle(ctx context.Context, in *CreateArticleRequest, opts ...grpc.CallOption) (*Article, error)
 	GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*Article, error)
+	GetArticles(ctx context.Context, in *GetArticlesRequest, opts ...grpc.CallOption) (*ArticlesResponse, error)
 	UpdateArticle(ctx context.Context, in *UpdateArticleRequest, opts ...grpc.CallOption) (*Article, error)
 	DeleteArticle(ctx context.Context, in *DeleteArticleRequest, opts ...grpc.CallOption) (*Empty, error)
 	FavoriteArticle(ctx context.Context, in *FavoriteArticleRequest, opts ...grpc.CallOption) (*Article, error)
@@ -49,6 +50,15 @@ func (c *articlesClient) CreateArticle(ctx context.Context, in *CreateArticleReq
 func (c *articlesClient) GetArticle(ctx context.Context, in *GetArticleRequest, opts ...grpc.CallOption) (*Article, error) {
 	out := new(Article)
 	err := c.cc.Invoke(ctx, "/article.Articles/GetArticle", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *articlesClient) GetArticles(ctx context.Context, in *GetArticlesRequest, opts ...grpc.CallOption) (*ArticlesResponse, error) {
+	out := new(ArticlesResponse)
+	err := c.cc.Invoke(ctx, "/article.Articles/GetArticles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +134,7 @@ func (c *articlesClient) DeleteComment(ctx context.Context, in *DeleteCommentReq
 type ArticlesServer interface {
 	CreateArticle(context.Context, *CreateArticleRequest) (*Article, error)
 	GetArticle(context.Context, *GetArticleRequest) (*Article, error)
+	GetArticles(context.Context, *GetArticlesRequest) (*ArticlesResponse, error)
 	UpdateArticle(context.Context, *UpdateArticleRequest) (*Article, error)
 	DeleteArticle(context.Context, *DeleteArticleRequest) (*Empty, error)
 	FavoriteArticle(context.Context, *FavoriteArticleRequest) (*Article, error)
@@ -142,6 +153,9 @@ func (UnimplementedArticlesServer) CreateArticle(context.Context, *CreateArticle
 }
 func (UnimplementedArticlesServer) GetArticle(context.Context, *GetArticleRequest) (*Article, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetArticle not implemented")
+}
+func (UnimplementedArticlesServer) GetArticles(context.Context, *GetArticlesRequest) (*ArticlesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetArticles not implemented")
 }
 func (UnimplementedArticlesServer) UpdateArticle(context.Context, *UpdateArticleRequest) (*Article, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateArticle not implemented")
@@ -208,6 +222,24 @@ func _Articles_GetArticle_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ArticlesServer).GetArticle(ctx, req.(*GetArticleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Articles_GetArticles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetArticlesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArticlesServer).GetArticles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/article.Articles/GetArticles",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArticlesServer).GetArticles(ctx, req.(*GetArticlesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -352,6 +384,10 @@ var Articles_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetArticle",
 			Handler:    _Articles_GetArticle_Handler,
+		},
+		{
+			MethodName: "GetArticles",
+			Handler:    _Articles_GetArticles_Handler,
 		},
 		{
 			MethodName: "UpdateArticle",

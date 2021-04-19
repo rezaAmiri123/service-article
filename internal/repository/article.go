@@ -16,6 +16,7 @@ type ArticleRepository interface {
 	Delete(ctx context.Context, article *model.Article) error
 	GetBySlug(ctx context.Context, slug string) (*model.Article, error)
 	GetByID(ctx context.Context, id string) (*model.Article, error)
+	GetArticles(ctx context.Context, authorID, tagName, favoritedByID string, limit, offset int64) ([]model.Article, error)
 	CreateComment(ctx context.Context, comment *model.Comment) error
 	GetCommentByID(ctx context.Context, id string) (*model.Comment, error)
 	GetComments(ctx context.Context, article *model.Article) ([]model.Comment, error)
@@ -93,6 +94,40 @@ func (repo *ORMArticleRepository) GetCommentByID(ctx context.Context, id string)
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (repo *ORMArticleRepository) GetArticles(ctx context.Context, authorID, tagName, favoritedByID string, limit, offset int64) ([]model.Article, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ORMArticleRepository.GetArticles")
+	defer span.Finish()
+
+	d := repo.db
+	if tagName != "" {
+		d = d.Where("tags.name = ?", tagName)
+	}
+	if authorID !=""{
+		d = d.Where("user_id = ?", authorID)
+	}
+	if favoritedByID != "" {
+		rows, err := repo.db.Select("article_id").
+			Table("favorite_articles").
+			Where("user_id = ?", favoritedByID).
+			Offset(offset).Limit(limit).Rows()
+		if err != nil {
+			return []model.Article{}, err
+		}
+		defer rows.Close()
+		var ids []uint
+		for rows.Next() {
+			var id uint
+			rows.Scan(&id)
+			ids = append(ids, id)
+		}
+		d = d.Where("id in (?)", ids)
+	}
+	d = d.Offset(offset).Limit(limit)
+	var as []model.Article
+	err := d.Find(&as).Error
+	return as, err
 }
 
 func (repo *ORMArticleRepository) DeleteComment(ctx context.Context, comment *model.Comment) error {

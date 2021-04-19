@@ -17,6 +17,60 @@
   ],
   "paths": {
     "/articles": {
+      "get": {
+        "operationId": "Articles_GetArticles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/articleArticlesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "authorID",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "favorited",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Articles"
+        ]
+      },
       "post": {
         "operationId": "Articles_CreateArticle",
         "responses": {
@@ -339,6 +393,21 @@
         "favoritesCount": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "articleArticlesResponse": {
+      "type": "object",
+      "properties": {
+        "articlesCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "articles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/articleArticle"
+          }
         }
       }
     },

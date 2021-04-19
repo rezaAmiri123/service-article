@@ -78,6 +78,37 @@ func (h *articleHandler) GetArticle(ctx context.Context, req *pb.GetArticleReque
 	return article.ProtoArticle(favorited), nil
 }
 
+func (h *articleHandler) GetArticles(ctx context.Context, req *pb.GetArticlesRequest) (*pb.ArticlesResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "articleHandler.GetArticles")
+	defer span.Finish()
+
+	user, err := h.getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	limit := req.GetLimit()
+	if limit == 0 {
+		limit = 20
+	}
+	as, err := h.repo.GetArticles(ctx, req.GetAuthorID(), req.GetTag(), req.GetFavorited(), limit, req.GetOffset())
+	if err != nil {
+		msg := fmt.Sprintf("failed to get articles: %w", err.Error())
+		return nil, status.Error(codes.Aborted, msg)
+	}
+	pas := make([]*pb.Article, len(as))
+	for _, a := range as {
+		favorited, err := h.repo.IsFavorited(ctx, &a, user.Id)
+		if err != nil {
+			msg := fmt.Sprintf("failed to get favorited status: %w", err.Error())
+			return nil, status.Error(codes.Aborted, msg)
+		}
+		pa := a.ProtoArticle(favorited)
+		pas = append(pas, pa)
+	}
+	return &pb.ArticlesResponse{Articles: pas, ArticlesCount: int32(len(pas))}, nil
+}
+
 func (h *articleHandler) getUser(ctx context.Context) (*userPb.UserResponse, error) {
 	empty := userPb.Empty{}
 	md, _ := metadata.FromIncomingContext(ctx)

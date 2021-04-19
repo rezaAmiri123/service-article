@@ -19,6 +19,12 @@ service Articles{
     };
   }
 
+  rpc GetArticles(GetArticlesRequest) returns(ArticlesResponse){
+    option (google.api.http) = {
+      get: "/articles"
+    };
+  }
+
   rpc UpdateArticle(UpdateArticleRequest) returns(Article){
     option (google.api.http) = {
       put: "/articles/{slug}"
@@ -94,6 +100,19 @@ message CreateCommentRequest {
 
 message GetArticleRequest {
   string slug = 1;
+}
+
+message GetArticlesRequest{
+  string tag = 1;
+  string authorID = 2;
+  string favorited = 3;
+  int64 limit = 4;
+  int64 offset = 5;
+}
+
+message ArticlesResponse{
+  int32 articlesCount=1;
+  repeated Article articles=2;
 }
 
 message UpdateArticleRequest{
