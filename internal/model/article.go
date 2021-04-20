@@ -18,8 +18,8 @@ type Article struct {
 	Tags           []Tag  `gorm:"many2many:article_tags"`
 	UserID         string `gorm:"not null"`
 	Comments       []Comment
-	FavoritedUsers []string `gorm:"many2many:favorite_articles"`
-	FavoritesCount int32    `gorm:"not null;default=0"`
+	Favorited      []FavoriteArticle
+	FavoritesCount int32 `gorm:"not null;default=0"`
 }
 
 // Validate validates fields of article model
@@ -48,11 +48,11 @@ func (a *Article) Overwrite(title, description, body string) {
 // ProtoArticle generates proto article model from article
 func (a *Article) ProtoArticle(favorited bool) *pb.Article {
 	pa := pb.Article{
-		Slug:        a.Slug,
-		Title:       a.Title,
-		Description: a.Description,
-		Body:        a.Body,
-		Favorited: favorited,
+		Slug:           a.Slug,
+		Title:          a.Title,
+		Description:    a.Description,
+		Body:           a.Body,
+		Favorited:      favorited,
 		FavoritesCount: a.FavoritesCount,
 	}
 

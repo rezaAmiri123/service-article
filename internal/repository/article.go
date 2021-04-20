@@ -156,7 +156,9 @@ func (repo *ORMArticleRepository) AddFavorite(ctx context.Context, article *mode
 	defer span.Finish()
 
 	tx := repo.db.Begin()
-	err := tx.Model(article).Association("FavoritedUsers").Append(userID).Error
+	fav := model.FavoriteArticle{UserID: userID, ArticleID: article.ID}
+	//err := tx.Model(article).Association("FavoritedUsers").Append(userID).Error
+	err := tx.Model(article).Association("Favorited").Append(fav).Error
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -176,7 +178,13 @@ func (repo *ORMArticleRepository) DeleteFavorite(ctx context.Context, article *m
 	defer span.Finish()
 
 	tx := repo.db.Begin()
-	err := tx.Model(article).Association("FavoritedUsers").Delete(userID).Error
+	// TODO it needs review
+	//err := tx.Model(article).Association("FavoritedUsers").Delete(userID).Error
+	filter := model.FavoriteArticle{UserID: userID, ArticleID: article.ID}
+	obj := model.FavoriteArticle{}
+	err :=tx.Delete(&obj, filter).Error
+	//err := tx.Model(article).Association("Favorited").Delete(obj).Error
+
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -201,8 +209,8 @@ func (repo *ORMArticleRepository) IsFavorited(ctx context.Context, article *mode
 	}
 
 	var count int
-	filter := model.Article{}
-	filter.ID = article.ID
+	filter := model.FavoriteArticle{}
+	filter.ArticleID = article.ID
 	filter.UserID = userID
 	err := repo.db.Table("favorite_articles").Where(filter).Count(&count).Error
 	if err != nil {
